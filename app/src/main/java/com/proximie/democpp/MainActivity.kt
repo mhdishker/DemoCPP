@@ -21,13 +21,15 @@ class MainActivity : ComponentActivity() {
             DemoCTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     Greeting(
-                        name = "Android",
+                        name = stringFromCPP() ?: "",
                         modifier = Modifier.padding(innerPadding)
                     )
                 }
             }
         }
     }
+
+    external fun stringFromCPP(): String?
     companion object {
         init {
             System.loadLibrary("native-lib")
