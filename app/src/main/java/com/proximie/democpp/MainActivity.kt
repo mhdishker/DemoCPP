@@ -28,6 +28,11 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+    companion object {
+        init {
+            System.loadLibrary("native-lib")
+        }
+    }
 }
 
 @Composable
