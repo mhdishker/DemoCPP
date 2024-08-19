@@ -23,6 +23,11 @@ android {
                 cppFlags ''
             }
         }
+        sourceSets {
+            main {
+                jniLibs.srcDirs = ['libs']
+            }
+        }
     }
 
     buildTypes {

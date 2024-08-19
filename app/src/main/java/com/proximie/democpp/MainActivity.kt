@@ -21,7 +21,7 @@ class MainActivity : ComponentActivity() {
             DemoCTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     Greeting(
-                        name = stringFromCPP() ?: "",
+                        name = stringSoLib() ?: "",
                         modifier = Modifier.padding(innerPadding)
                     )
                 }
@@ -29,10 +29,12 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    external fun stringSoLib(): String?
     external fun stringFromCPP(): String?
     companion object {
         init {
             System.loadLibrary("native-lib")
+            System.loadLibrary("binary-lib")
         }
     }
 }
