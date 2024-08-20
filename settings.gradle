@@ -21,3 +21,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "Demo C++"
 include ':app'
+include ':external-lib'

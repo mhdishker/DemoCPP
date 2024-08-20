@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.proximie.democpp.ui.theme.DemoCTheme
+import com.proximie.externallib.NativeLib
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -21,7 +22,7 @@ class MainActivity : ComponentActivity() {
             DemoCTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     Greeting(
-                        name = stringSoLib() ?: "",
+                        name = NativeLib().stringFromAAR(),
                         modifier = Modifier.padding(innerPadding)
                     )
                 }
