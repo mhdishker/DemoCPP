@@ -80,3 +80,104 @@
           return env->NewStringUTF(hello.c_str());
       }
      ```
+
+## Steps to integrating `libbinary-lib.so` into an Android Project
+
+This guide explains how to integrate a precompiled `.so` library (`libbinary-lib.so`) into an Android project that already has an existing C++ source file (`native-lib.cpp`).
+
+1. **Modify `CMakeLists.txt`**
+
+Update your `CMakeLists.txt` file to include both the existing `native-lib.cpp` and `libbinary-lib.cbb`.
+
+```cmake
+
+add_library(
+    binary-lib
+    SHARED
+    binary-lib.cpp )
+
+target_link_libraries(
+    binary-lib
+    ${log-lib} )
+```
+
+2. **Building the `.so` File**
+
+- Build the Project: Run the following command in the project root to build your C++ code into a `.so` file:
+
+```bash
+./gradlew assembleDebug
+```
+The .so files will be generated for different architectures (e.g., armeabi-v7a, arm64-v8a, x86, x86_64) in the app/build/intermediates/cmake/debug/obj/ directory.
+
+- Locate the .so Files:
+  The .so files will be located in:
+
+```bash
+app/build/intermediates/cxx/debug/obj/<architecture>/libbinary-lib.so
+```
+<architecture> refers to armeabi-v7a, arm64-v8a, x86, or x86_64.
+
+
+![image](https://github.com/user-attachments/assets/4822d406-8b69-4c9c-9bc2-e7c94ecfba14)
+
+3. **Include the `.so` Files in Your Project**
+
+Create a `libs` directory under `app` and subdirectories for each architecture:
+
+```bash
+mkdir -p app/libs/armeabi-v7a
+mkdir -p app/libs/arm64-v8a
+mkdir -p app/libs/x86
+mkdir -p app/libs/x86_64
+```
+Copy the .so Files:
+Copy the compiled .so files into their respective architecture directories:
+
+```bash
+cp app/build/intermediates/cxx/debug/obj/armeabi-v7a/libbinary-lib.so  app/libs/armeabi-v7a/
+cp app/build/intermediates/cxx/debug/obj/arm64-v8a/libbinary-lib.so  app/libs/arm64-v8a/
+cp app/build/intermediates/cxx/debug/obj/x86/libbinary-lib.so  app/libs/x86/
+cp app/build/intermediates/cxx/debug/obj/x86_64/libbinary-lib.so  app/libs/x86_64/
+```
+![image](https://github.com/user-attachments/assets/c0470d46-d0aa-49f2-8378-2a6f24f1794c)
+
+
+Configure build.gradle to Include the .so Files:
+Ensure that the `build.gradle` file includes the path to the libs directory:
+
+```groovy
+android {
+    ...
+    sourceSets {
+        main {
+            jniLibs.srcDirs = ['libs']
+        }
+    }
+}
+```
+
+4. **Load the Binary Library in Your Kotlin Code**
+
+Load the .so Library:In your MainActivity (or relevant class), load the binary library using System.loadLibrary():
+```kotlin
+    companion object {
+        init {
+            System.loadLibrary("native-lib")
+            System.loadLibrary("binary-lib")
+        }
+    }
+```
+5. **Optional - Cleanup**
+
+Optional: Remove the .cpp File:
+
+If you no longer need the source code in the project, you can remove the binary-lib.cpp file:
+```bash
+rm app/src/main/cpp/binary-lib.cpp
+```
+
+Rebuild the project to ensure everything is working:
+```bash
+./gradlew assembleDebug
+```
