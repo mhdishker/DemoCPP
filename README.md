@@ -181,3 +181,124 @@ Rebuild the project to ensure everything is working:
 ```bash
 ./gradlew assembleDebug
 ```
+
+
+## Steps to Add aar library to Your Jetpack compose project
+you can create it in this project or in other project. For demo purpos we will create it in the project, please checkout [build-aar](https://github.com/mhdishker/DemoCPP/tree/build-aar) branch,  the last commit represent the below steps
+
+1. **create AAR library file**
+   Go to `File > New > New Module` and Select `Android Library` and click Next
+
+Name the library module `external-lib` then Click Finish.
+
+<img width="854" alt="image" src="https://github.com/user-attachments/assets/bf6d2542-c000-4d5f-b0c4-bd215308b1cd">
+
+Right-click on the external-lib module and select `Add C++ to Project`.
+
+<img width="523" alt="image" src="https://github.com/user-attachments/assets/440eba55-1483-4656-8a5a-4b7b1a521f4f">
+
+2. **Set Up CMakeLists.txt**
+
+In the external-lib module, open the CMakeLists.txt file and ensure it includes the following:
+
+```cmake
+cmake_minimum_required(VERSION 3.4.1)
+project("external-lib")
+
+add_library( # Sets the name of the library.
+             external-lib
+
+             # Sets the library as a shared library.
+             SHARED
+
+             # Provides a relative path to your source file(s).
+             src/main/cpp/external-lib.cpp )
+
+find_library( # Sets the path of the NDK library.
+              log-lib
+
+              # Specifies the NDK library that you want to link to.
+              log )
+
+target_link_libraries( # Links your external library with the NDK library.
+                       external-lib
+                       ${log-lib} )
+```
+3. **Write the C++ Code**
+
+In the external-lib module, navigate to src/main/cpp/ and edit the external-lib.cpp file with the following code:
+
+```cpp
+#include <jni.h>
+#include <string>
+
+extern "C"
+JNIEXPORT jstring JNICALL
+Java_com_example_externallib_NativeLib_stringFromAAR(
+        JNIEnv* env,
+        jobject /* this */) {
+    std::string hello = "Hello from C++ in AAR!";
+    return env->NewStringUTF(hello.c_str());
+}
+```
+4. **Create the Kotlin Class**
+5.
+In the external-lib module, navigate to src/main/java/com/proximie/externallib/.
+
+Create a new Kotlin file named NativeLib.kt with the following code:
+
+```kotlin
+package com.proximie.externallib
+
+class NativeLib {
+    // Load the native library
+    init {
+        System.loadLibrary("external-lib")
+    }
+
+    // Declare the native method
+    external fun stringFromAAR(): String
+
+}
+```
+
+5. **Build the AAR File**
+
+Build your projectm, the AAR file will be generated in external-lib/build/outputs/aar/.
+
+6. **Add the AAR to Your Main Project**
+   Copy the AAR file from external-lib/build/outputs/aar/ to the libs directory in your main project’s app module.
+
+<img width="382" alt="image" src="https://github.com/user-attachments/assets/8d34358c-1e3a-4db1-9b0c-b35c081249c0">
+
+Modify the app/build.gradle file to include the AAR as a dependency:
+
+```groovy
+dependencies {
+    implementation files('libs/external-lib-release.aar')
+}
+```
+Use the NativeLib Class in Your Main Project:
+
+In your main project’s MainActivity or any other activity, use the NativeLib class:
+
+```kotlin
+import com.example.externallib.NativeLib
+
+class MainActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+        setContent {
+            DemoCTheme {
+                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+                    Greeting(
+                        name = NativeLib().stringFromAAR(),
+                        modifier = Modifier.padding(innerPadding)
+                    )
+                }
+            }
+        }
+    }
+}
+```
